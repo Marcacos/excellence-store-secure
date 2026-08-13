@@ -1,14 +1,21 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { produtos, type Product } from "./products";
+import type { Product } from "./products";
 
-export type CartLine = { id: string; tamanho: string; cor: string; qtd: number };
+export type CartLine = {
+  id: string;
+  nome: string;
+  preco: number;
+  imagem: string;
+  tamanho: string;
+  cor: string;
+  qtd: number;
+};
 
 type CartCtx = {
-  linhas: CartLine[];
-  itens: (CartLine & { produto: Product })[];
+  itens: CartLine[];
   total: number;
   quantidade: number;
-  adicionar: (id: string, tamanho: string, cor: string, qtd?: number) => void;
+  adicionar: (produto: Product, tamanho: string, cor: string, qtd?: number) => void;
   remover: (id: string, tamanho: string, cor: string) => void;
   alterarQtd: (id: string, tamanho: string, cor: string, qtd: number) => void;
   limpar: () => void;
@@ -23,7 +30,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) setLinhas(JSON.parse(raw) as CartLine[]);
+      if (raw) {
+        const parsed = JSON.parse(raw) as CartLine[];
+        setLinhas(parsed.filter((l) => typeof l?.preco === "number" && typeof l?.nome === "string"));
+      }
     } catch {
       /* ignora storage inválido */
     }
@@ -37,23 +47,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [linhas]);
 
-  const value = useMemo<CartCtx>(() => {
-    const itens = linhas
-      .map((l) => {
-        const produto = produtos.find((p) => p.id === l.id);
-        return produto ? { ...l, produto } : null;
-      })
-      .filter((x): x is CartLine & { produto: Product } => x !== null);
-
-    return {
-      linhas,
-      itens,
-      total: itens.reduce((s, i) => s + i.produto.preco * i.qtd, 0),
-      quantidade: itens.reduce((s, i) => s + i.qtd, 0),
-      adicionar: (id, tamanho, cor, qtd = 1) =>
+  const value = useMemo<CartCtx>(
+    () => ({
+      itens: linhas,
+      total: linhas.reduce((s, i) => s + i.preco * i.qtd, 0),
+      quantidade: linhas.reduce((s, i) => s + i.qtd, 0),
+      adicionar: (produto, tamanho, cor, qtd = 1) =>
         setLinhas((prev) => {
-          const igual = (l: CartLine) => l.id === id && l.tamanho === tamanho && l.cor === cor;
-          if (!prev.some(igual)) return [...prev, { id, tamanho, cor, qtd }];
+          const igual = (l: CartLine) =>
+            l.id === produto.id && l.tamanho === tamanho && l.cor === cor;
+          if (!prev.some(igual))
+            return [
+              ...prev,
+              {
+                id: produto.id,
+                nome: produto.nome,
+                preco: produto.preco,
+                imagem: produto.imagem,
+                tamanho,
+                cor,
+                qtd,
+              },
+            ];
           return prev.map((l) => (igual(l) ? { ...l, qtd: l.qtd + qtd } : l));
         }),
       remover: (id, tamanho, cor) =>
@@ -63,14 +78,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       alterarQtd: (id, tamanho, cor, qtd) =>
         setLinhas((prev) =>
           prev
-            .map((l) =>
-              l.id === id && l.tamanho === tamanho && l.cor === cor ? { ...l, qtd } : l,
-            )
+            .map((l) => (l.id === id && l.tamanho === tamanho && l.cor === cor ? { ...l, qtd } : l))
             .filter((l) => l.qtd > 0),
         ),
       limpar: () => setLinhas([]),
-    };
-  }, [linhas]);
+    }),
+    [linhas],
+  );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

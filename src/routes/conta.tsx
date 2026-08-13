@@ -36,7 +36,7 @@ const schema = z.object({
 });
 
 function ContaPage() {
-  const { user, sair } = useAuth();
+  const { user, isAdmin, sair } = useAuth();
   const navigate = useNavigate();
   const [modo, setModo] = useState<"cadastro" | "login">("cadastro");
   const [erros, setErros] = useState<Record<string, string>>({});
@@ -74,6 +74,21 @@ function ContaPage() {
         if (error) throw error;
         toast.success("Bem-vindo de volta!");
       }
+
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess.session?.user.id;
+      if (uid) {
+        const { data: papel } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", uid)
+          .eq("role", "admin")
+          .maybeSingle();
+        if (papel) {
+          void navigate({ to: "/admin" });
+          return;
+        }
+      }
       void navigate({ to: "/carrinho" });
     } catch (err) {
       toast.error("Não foi possível continuar", {
@@ -93,7 +108,7 @@ function ContaPage() {
             <h1 className="text-xl font-semibold tracking-tight">Sua conta</h1>
             <p className="mt-2 text-sm text-muted-foreground">{user.email}</p>
             <Button asChild className="mt-6 w-full">
-              <Link to="/carrinho">Ir para o carrinho</Link>
+              {isAdmin ? <Link to="/admin">Ir para o painel</Link> : <Link to="/carrinho">Ir para o carrinho</Link>}
             </Button>
             <Button variant="outline" className="mt-3 w-full" onClick={() => void sair()}>
               Sair da conta
@@ -108,7 +123,7 @@ function ContaPage() {
               É necessário ter uma conta para comprar na Excellence Store.
             </p>
 
-            <form onSubmit={enviar} className="mt-8 space-y-4">
+            <form onSubmit={(e) => void enviar(e)} className="mt-8 space-y-4">
               {modo === "cadastro" && (
                 <div>
                   <Label htmlFor="nome">Nome completo</Label>

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { brl } from "@/lib/products";
 import { useCart } from "@/lib/cart";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/carrinho")({
@@ -41,7 +42,9 @@ function Carrinho() {
   const [erros, setErros] = useState<Record<string, string>>({});
   const [concluido, setConcluido] = useState(false);
 
-  function finalizar(e: React.FormEvent<HTMLFormElement>) {
+  const [enviando, setEnviando] = useState(false);
+
+  async function finalizar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!user) {
       toast.info("Crie sua conta para finalizar", {
@@ -58,9 +61,50 @@ function Carrinho() {
       return;
     }
     setErros({});
-    limpar();
-    setConcluido(true);
-    toast.success("Pedido confirmado!", { description: "Você receberá a confirmação por e-mail." });
+    setEnviando(true);
+    try {
+      const { data: pedido, error } = await supabase
+        .from("orders")
+        .insert({
+          user_id: user.id,
+          cliente_nome: r.data.nome,
+          email: r.data.email,
+          endereco: r.data.endereco,
+          cidade: r.data.cidade,
+          cep: r.data.cep,
+          total,
+          status: "Pago",
+        })
+        .select("id")
+        .single();
+      if (error || !pedido) throw error ?? new Error("Falha ao criar pedido");
+
+      const { error: erroItens } = await supabase.from("order_items").insert(
+        itens.map((i) => ({
+          order_id: pedido.id,
+          product_id: i.id,
+          nome: i.nome,
+          preco: i.preco,
+          qtd: i.qtd,
+          tamanho: i.tamanho,
+          cor: i.cor,
+        })),
+      );
+      if (erroItens) throw erroItens;
+
+      limpar();
+      setConcluido(true);
+      toast.success("Pedido confirmado!", {
+        description: "Você receberá a confirmação por e-mail.",
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("Não foi possível concluir o pedido", {
+        description: "Tente novamente em instantes.",
+      });
+    } finally {
+      setEnviando(false);
+    }
   }
 
   return (
@@ -93,15 +137,15 @@ function Carrinho() {
               {itens.map((i) => (
                 <li key={`${i.id}-${i.tamanho}-${i.cor}`} className="flex gap-4 py-5">
                   <img
-                    src={i.produto.imagem}
-                    alt={i.produto.nome}
+                    src={i.imagem}
+                    alt={i.nome}
                     loading="lazy"
                     width={900}
                     height={1100}
                     className="h-24 w-20 rounded-md object-cover"
                   />
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{i.produto.nome}</p>
+                    <p className="text-sm font-medium">{i.nome}</p>
                     <p className="text-xs text-muted-foreground">{i.cor} · Tamanho {i.tamanho}</p>
                     <div className="mt-2 flex items-center gap-2">
                       <Button
@@ -132,12 +176,12 @@ function Carrinho() {
                       </button>
                     </div>
                   </div>
-                  <p className="text-sm font-medium">{brl(i.produto.preco * i.qtd)}</p>
+                  <p className="text-sm font-medium">{brl(i.preco * i.qtd)}</p>
                 </li>
               ))}
             </ul>
 
-            <form onSubmit={finalizar} className="rounded-lg border border-border p-6">
+            <form onSubmit={(e) => void finalizar(e)} className="rounded-lg border border-border p-6">
               <h2 className="text-lg font-semibold">Finalizar compra</h2>
               <div className="mt-5 space-y-4">
                 {(
@@ -164,8 +208,8 @@ function Carrinho() {
                 <span className="text-lg font-semibold">{brl(total)}</span>
               </div>
               {user ? (
-                <Button type="submit" className="mt-4 w-full" disabled={carregando}>
-                  Pagar com segurança
+                <Button type="submit" className="mt-4 w-full" disabled={carregando || enviando}>
+                  {enviando ? "Processando..." : "Pagar com segurança"}
                 </Button>
               ) : (
                 <div className="mt-4">

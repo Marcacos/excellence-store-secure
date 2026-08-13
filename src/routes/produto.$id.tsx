@@ -1,35 +1,22 @@
-import { createFileRoute, useNavigate, notFound, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { StoreHeader } from "@/components/StoreHeader";
 import { StoreFooter } from "@/components/StoreFooter";
 import { Button } from "@/components/ui/button";
-import { getProduto, brl } from "@/lib/products";
+import { useProduto, brl } from "@/lib/products";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/produto/$id")({
-  loader: ({ params }) => {
-    const produto = getProduto(params.id);
-    if (!produto) throw notFound();
-    return { produto };
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) {
-      return {
-        meta: [{ title: "Produto indisponível — Excellence Store" }, { name: "robots", content: "noindex" }],
-      };
-    }
-    const { produto } = loaderData;
-    return {
-      meta: [
-        { title: `${produto.nome} — Excellence Store` },
-        { name: "description", content: produto.descricao },
-        { property: "og:title", content: `${produto.nome} — Excellence Store` },
-        { property: "og:description", content: produto.descricao },
-      ],
-    };
-  },
+  head: () => ({
+    meta: [
+      { title: "Produto — Excellence Store" },
+      { name: "description", content: "Detalhes da peça da coleção Stam na Excellence Store." },
+      { property: "og:title", content: "Produto — Excellence Store" },
+      { property: "og:description", content: "Detalhes da peça da coleção Stam." },
+    ],
+  }),
   errorComponent: () => <Aviso texto="Não foi possível carregar este produto." />,
   notFoundComponent: () => <Aviso texto="Produto não encontrado." />,
   component: ProdutoPage,
@@ -50,13 +37,35 @@ function Aviso({ texto }: { texto: string }) {
 }
 
 function ProdutoPage() {
-  const { produto } = Route.useLoaderData();
+  const { id } = Route.useParams();
+  const { data: produto, isLoading } = useProduto(id);
   const { adicionar } = useCart();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [tamanho, setTamanho] = useState(produto.tamanhos[1] ?? produto.tamanhos[0]!);
-  const [cor, setCor] = useState(produto.cores[0]!.nome);
+  const [tamanho, setTamanho] = useState("");
+  const [cor, setCor] = useState("");
   const [zoom, setZoom] = useState(false);
+
+  useEffect(() => {
+    if (produto) {
+      setTamanho(produto.tamanhos[1] ?? produto.tamanhos[0] ?? "");
+      setCor(produto.cores[0]?.nome ?? "");
+    }
+  }, [produto]);
+
+  if (isLoading) {
+    return <Aviso texto="Carregando produto..." />;
+  }
+  if (!produto) {
+    return <Aviso texto="Produto não encontrado." />;
+  }
+
+  function exigirConta() {
+    if (user) return false;
+    toast.info("Crie sua conta para comprar");
+    void navigate({ to: "/conta" });
+    return true;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -120,12 +129,8 @@ function ProdutoPage() {
             <Button
               className="sm:flex-1"
               onClick={() => {
-                if (!user) {
-                  toast.info("Crie sua conta para comprar");
-                  void navigate({ to: "/conta" });
-                  return;
-                }
-                adicionar(produto.id, tamanho, cor);
+                if (exigirConta()) return;
+                adicionar(produto, tamanho, cor);
                 void navigate({ to: "/carrinho" });
               }}
             >
@@ -135,12 +140,8 @@ function ProdutoPage() {
               variant="outline"
               className="sm:flex-1"
               onClick={() => {
-                if (!user) {
-                  toast.info("Crie sua conta para comprar");
-                  void navigate({ to: "/conta" });
-                  return;
-                }
-                adicionar(produto.id, tamanho, cor);
+                if (exigirConta()) return;
+                adicionar(produto, tamanho, cor);
                 toast.success("Adicionado ao carrinho", {
                   description: `${produto.nome} · ${cor} · ${tamanho}`,
                 });

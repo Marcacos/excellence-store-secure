@@ -3,19 +3,22 @@ import { Link } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { produtos, brl } from "@/lib/products";
+import { useProdutos, brl } from "@/lib/products";
 
 export function SearchDialog() {
   const [aberto, setAberto] = useState(false);
   const [termo, setTermo] = useState("");
 
+  const { data: produtos } = useProdutos();
+
   const resultados = useMemo(() => {
+    const lista = produtos ?? [];
     const t = termo.trim().toLowerCase();
-    if (!t) return produtos;
-    return produtos.filter(
+    if (!t) return lista;
+    return lista.filter(
       (p) => p.nome.toLowerCase().includes(t) || p.categoria.toLowerCase().includes(t),
     );
-  }, [termo]);
+  }, [termo, produtos]);
 
   return (
     <>
