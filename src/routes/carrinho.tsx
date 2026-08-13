@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { brl } from "@/lib/products";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
@@ -36,11 +37,18 @@ const checkoutSchema = z.object({
 
 function Carrinho() {
   const { itens, total, alterarQtd, remover, limpar } = useCart();
+  const { user, carregando } = useAuth();
   const [erros, setErros] = useState<Record<string, string>>({});
   const [concluido, setConcluido] = useState(false);
 
   function finalizar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!user) {
+      toast.info("Crie sua conta para finalizar", {
+        description: "É necessário ter uma conta para comprar.",
+      });
+      return;
+    }
     const dados = Object.fromEntries(new FormData(e.currentTarget));
     const r = checkoutSchema.safeParse(dados);
     if (!r.success) {
@@ -83,7 +91,7 @@ function Carrinho() {
           <div className="mt-8 grid gap-10 lg:grid-cols-[1.3fr_1fr]">
             <ul className="divide-y divide-border">
               {itens.map((i) => (
-                <li key={`${i.id}-${i.tamanho}`} className="flex gap-4 py-5">
+                <li key={`${i.id}-${i.tamanho}-${i.cor}`} className="flex gap-4 py-5">
                   <img
                     src={i.produto.imagem}
                     alt={i.produto.nome}
@@ -94,13 +102,13 @@ function Carrinho() {
                   />
                   <div className="flex-1">
                     <p className="text-sm font-medium">{i.produto.nome}</p>
-                    <p className="text-xs text-muted-foreground">Tamanho {i.tamanho}</p>
+                    <p className="text-xs text-muted-foreground">{i.cor} · Tamanho {i.tamanho}</p>
                     <div className="mt-2 flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => alterarQtd(i.id, i.tamanho, i.qtd - 1)}
+                        onClick={() => alterarQtd(i.id, i.tamanho, i.cor, i.qtd - 1)}
                         aria-label="Diminuir quantidade"
                       >
                         −
@@ -110,13 +118,13 @@ function Carrinho() {
                         variant="outline"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => alterarQtd(i.id, i.tamanho, i.qtd + 1)}
+                        onClick={() => alterarQtd(i.id, i.tamanho, i.cor, i.qtd + 1)}
                         aria-label="Aumentar quantidade"
                       >
                         +
                       </Button>
                       <button
-                        onClick={() => remover(i.id, i.tamanho)}
+                        onClick={() => remover(i.id, i.tamanho, i.cor)}
                         className="ml-2 text-muted-foreground hover:text-destructive"
                         aria-label="Remover item"
                       >
@@ -155,9 +163,20 @@ function Carrinho() {
                 <span className="text-sm text-muted-foreground">Total</span>
                 <span className="text-lg font-semibold">{brl(total)}</span>
               </div>
-              <Button type="submit" className="mt-4 w-full">
-                Pagar com segurança
-              </Button>
+              {user ? (
+                <Button type="submit" className="mt-4 w-full" disabled={carregando}>
+                  Pagar com segurança
+                </Button>
+              ) : (
+                <div className="mt-4">
+                  <Button asChild className="w-full">
+                    <Link to="/conta">Criar conta para finalizar</Link>
+                  </Button>
+                  <p className="mt-2 text-center text-xs text-muted-foreground">
+                    É necessário ter uma conta para concluir a compra.
+                  </p>
+                </div>
+              )}
               <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5" /> Conexão criptografada e dados validados
               </p>

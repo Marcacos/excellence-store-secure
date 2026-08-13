@@ -1,11 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { toast } from "sonner";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import hero from "@/assets/hero-tshirts.jpg";
 import { StoreHeader } from "@/components/StoreHeader";
 import { StoreFooter } from "@/components/StoreFooter";
 import { Button } from "@/components/ui/button";
-import { produtos, brl } from "@/lib/products";
-import { useCart } from "@/lib/cart";
+import { produtos, brl, type Product } from "@/lib/products";
+import { ProductQuickView } from "@/components/ProductQuickView";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { adicionar } = useCart();
+  const [selecionado, setSelecionado] = useState<Product | null>(null);
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,7 +67,7 @@ function Home() {
           <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4">
             {produtos.map((p) => (
               <article key={p.id} className="group">
-                <Link to="/produto/$id" params={{ id: p.id }} className="block">
+                <button onClick={() => setSelecionado(p)} className="block w-full text-left">
                   <div className="overflow-hidden rounded-md bg-secondary">
                     <img
                       src={p.imagem}
@@ -80,22 +80,21 @@ function Home() {
                   </div>
                   <h3 className="mt-3 text-sm font-medium text-foreground">{p.nome}</h3>
                   <p className="text-sm text-muted-foreground">{brl(p.preco)}</p>
-                </Link>
-                <Button
-                  variant="outline"
-                  className="mt-3 w-full"
-                  onClick={() => {
-                    adicionar(p.id, p.tamanhos[1] ?? "M");
-                    toast.success("Adicionado ao carrinho", { description: p.nome });
-                  }}
-                >
-                  Adicionar ao Carrinho
+                </button>
+                <Button variant="outline" className="mt-3 w-full" onClick={() => setSelecionado(p)}>
+                  Selecionar opções
                 </Button>
               </article>
             ))}
           </div>
         </section>
       </main>
+
+      <ProductQuickView
+        produto={selecionado}
+        aberto={selecionado !== null}
+        onOpenChange={(v) => !v && setSelecionado(null)}
+      />
 
       <StoreFooter />
     </div>
