@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ShoppingBag, Menu } from "lucide-react";
 import { useState } from "react";
-import logo from "@/assets/excellence-logo.jpg.asset.json";
+import logo from "@/assets/excellence-logo.png.asset.json";
 import { useCart } from "@/lib/cart";
 
 const links = [
@@ -19,7 +19,7 @@ export function StoreHeader() {
     <header className="sticky top-0 z-40 silver-bar text-silver-foreground shadow-sm">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
         <Link to="/" className="flex items-center" aria-label="Excellence Store — início">
-          <img src={logo.url} alt="Excellence Store" className="h-9 w-auto rounded-sm" />
+          <img src={logo.url} alt="Excellence Store" className="h-7 w-auto" />
         </Link>
 
         <nav className="ml-6 hidden items-center gap-6 md:flex">

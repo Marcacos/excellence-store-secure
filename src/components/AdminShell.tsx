@@ -1,14 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { LayoutDashboard, ShieldCheck, Store } from "lucide-react";
-import logo from "@/assets/excellence-logo.jpg.asset.json";
+import logo from "@/assets/excellence-logo.png.asset.json";
 
 export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-secondary/40">
       <header className="silver-bar text-silver-foreground shadow-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
-          <img src={logo.url} alt="Excellence Store" className="h-8 w-auto rounded-sm" />
+          <img src={logo.url} alt="Excellence Store" className="h-6 w-auto" />
           <span className="text-sm font-medium">Painel do proprietário</span>
           <nav className="ml-auto flex items-center gap-1 text-sm">
             <Link
