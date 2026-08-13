@@ -7,10 +7,10 @@ import { useAuth } from "@/lib/auth";
 import { SearchDialog } from "@/components/SearchDialog";
 
 const links = [
-  { label: "Novidades", to: "/" },
-  { label: "Masculino", to: "/" },
-  { label: "Feminino", to: "/" },
-  { label: "Acessórios", to: "/" },
+  { label: "Novidades", slug: "novidades" },
+  { label: "Masculino", slug: "masculino" },
+  { label: "Feminino", slug: "feminino" },
+  { label: "Acessórios", slug: "acessorios" },
 ] as const;
 
 export function StoreHeader() {
