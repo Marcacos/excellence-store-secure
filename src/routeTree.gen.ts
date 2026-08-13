@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as ContaRouteImport } from './routes/conta'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
 import { Route as AdminSegurancaRouteImport } from './routes/admin.seguranca'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
@@ -43,6 +44,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProdutosRoute = AdminProdutosRouteImport.update({
+  id: '/produtos',
+  path: '/produtos',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSegurancaRoute = AdminSegurancaRouteImport.update({
   id: '/seguranca',
   path: '/seguranca',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/carrinho': typeof CarrinhoRoute
   '/conta': typeof ContaRoute
+  '/admin/produtos': typeof AdminProdutosRoute
   '/admin/seguranca': typeof AdminSegurancaRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/produto/$id': typeof ProdutoIdRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/carrinho': typeof CarrinhoRoute
   '/conta': typeof ContaRoute
+  '/admin/produtos': typeof AdminProdutosRoute
   '/admin/seguranca': typeof AdminSegurancaRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/produto/$id': typeof ProdutoIdRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/carrinho': typeof CarrinhoRoute
   '/conta': typeof ContaRoute
+  '/admin/produtos': typeof AdminProdutosRoute
   '/admin/seguranca': typeof AdminSegurancaRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/produto/$id': typeof ProdutoIdRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/carrinho'
     | '/conta'
+    | '/admin/produtos'
     | '/admin/seguranca'
     | '/categoria/$slug'
     | '/produto/$id'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carrinho'
     | '/conta'
+    | '/admin/produtos'
     | '/admin/seguranca'
     | '/categoria/$slug'
     | '/produto/$id'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/carrinho'
     | '/conta'
+    | '/admin/produtos'
     | '/admin/seguranca'
     | '/categoria/$slug'
     | '/produto/$id'
@@ -167,6 +179,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/produtos': {
+      id: '/admin/produtos'
+      path: '/produtos'
+      fullPath: '/admin/produtos'
+      preLoaderRoute: typeof AdminProdutosRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/seguranca': {
       id: '/admin/seguranca'
       path: '/seguranca'
@@ -192,11 +211,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminProdutosRoute: typeof AdminProdutosRoute
   AdminSegurancaRoute: typeof AdminSegurancaRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminProdutosRoute: AdminProdutosRoute,
   AdminSegurancaRoute: AdminSegurancaRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
