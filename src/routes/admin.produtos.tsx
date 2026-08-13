@@ -95,8 +95,11 @@ function AdminProdutos() {
         contentType: file.type,
       });
       if (error) throw error;
-      const { data } = supabase.storage.from("produtos").getPublicUrl(caminho);
-      setForm((f) => ({ ...f, imagem_url: data.publicUrl }));
+      const { data, error: erroUrl } = await supabase.storage
+        .from("produtos")
+        .createSignedUrl(caminho, 60 * 60 * 24 * 3650);
+      if (erroUrl || !data) throw erroUrl ?? new Error("Falha ao gerar URL");
+      setForm((f) => ({ ...f, imagem_url: data.signedUrl }));
       toast.success("Imagem enviada");
     } catch (err) {
       console.error(err);
