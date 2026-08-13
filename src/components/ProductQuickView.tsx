@@ -107,7 +107,7 @@ export function ProductQuickView({
                 className="sm:flex-1"
                 onClick={() => {
                   if (exigirConta()) return;
-                  adicionar(produto.id, tamanho, cor);
+                  adicionar(produto, tamanho, cor);
                   toast.success("Adicionado ao carrinho", {
                     description: `${produto.nome} · ${cor} · ${tamanho}`,
                   });
@@ -120,7 +120,7 @@ export function ProductQuickView({
                 className="sm:flex-1"
                 onClick={() => {
                   if (exigirConta()) return;
-                  adicionar(produto.id, tamanho, cor);
+                  adicionar(produto, tamanho, cor);
                   onOpenChange(false);
                   void navigate({ to: "/carrinho" });
                 }}

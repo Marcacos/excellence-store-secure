@@ -1,73 +1,83 @@
-import teeBlack from "@/assets/tee-black.jpg";
-import teeWhite from "@/assets/tee-white.jpg";
-import teeGrey from "@/assets/tee-grey.jpg";
-import teeNavy from "@/assets/tee-navy.jpg";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+export type Cor = { nome: string; hex: string };
 
 export type Product = {
   id: string;
   nome: string;
   preco: number;
-  categoria: "Novidades" | "Masculino" | "Feminino" | "Acessórios";
+  categoria: string;
   imagem: string;
   descricao: string;
   composicao: string;
   tamanhos: string[];
-  cores: { nome: string; hex: string }[];
+  cores: Cor[];
+  ativo: boolean;
 };
 
-export const produtos: Product[] = [
-  {
-    id: "stam-preta",
-    nome: "Camiseta Stam Preta",
-    preco: 189.9,
-    categoria: "Novidades",
-    imagem: teeBlack,
-    descricao:
-      "Camiseta da nova coleção Stam em algodão pima de gramatura alta, com caimento reto e acabamento premium.",
-    composicao: "100% algodão pima · 190 g/m² · Gola reforçada",
-    tamanhos: ["P", "M", "G", "GG"],
-    cores: [{ nome: "Preto", hex: "#111111" }, { nome: "Grafite", hex: "#3a3a3a" }, { nome: "Branco", hex: "#f5f5f5" }],
-  },
-  {
-    id: "stam-branca",
-    nome: "Camiseta Stam Branca",
-    preco: 179.9,
-    categoria: "Novidades",
-    imagem: teeWhite,
-    descricao:
-      "O básico definitivo da coleção Stam: branco puro, toque macio e resistência à lavagem.",
-    composicao: "100% algodão penteado · 180 g/m² · Costura dupla",
-    tamanhos: ["P", "M", "G", "GG"],
-    cores: [{ nome: "Branco", hex: "#f5f5f5" }, { nome: "Off-white", hex: "#e6e1d8" }, { nome: "Preto", hex: "#111111" }],
-  },
-  {
-    id: "stam-cinza",
-    nome: "Camiseta Stam Cinza Mescla",
-    preco: 184.9,
-    categoria: "Masculino",
-    imagem: teeGrey,
-    descricao:
-      "Cinza mescla em fio penteado, versátil para o dia a dia com modelagem confortável.",
-    composicao: "90% algodão / 10% viscose · 185 g/m²",
-    tamanhos: ["P", "M", "G", "GG"],
-    cores: [{ nome: "Cinza Mescla", hex: "#9a9a9a" }, { nome: "Chumbo", hex: "#4a4f55" }, { nome: "Preto", hex: "#111111" }],
-  },
-  {
-    id: "stam-marinho",
-    nome: "Camiseta Stam Azul Marinho",
-    preco: 194.9,
-    categoria: "Feminino",
-    imagem: teeNavy,
-    descricao:
-      "Azul marinho profundo com tingimento reativo que preserva a cor por mais tempo.",
-    composicao: "100% algodão · 190 g/m² · Tingimento reativo",
-    tamanhos: ["PP", "P", "M", "G"],
-    cores: [{ nome: "Azul Marinho", hex: "#1e2a44" }, { nome: "Azul Claro", hex: "#8fa8c8" }, { nome: "Branco", hex: "#f5f5f5" }],
-  },
-];
+export const CATEGORIAS = ["Novidades", "Masculino", "Feminino", "Acessórios"] as const;
 
-export function getProduto(id: string) {
-  return produtos.find((p) => p.id === id);
+export const SLUG_CATEGORIA: Record<string, string> = {
+  novidades: "Novidades",
+  masculino: "Masculino",
+  feminino: "Feminino",
+  acessorios: "Acessórios",
+};
+
+type Row = {
+  id: string;
+  nome: string;
+  preco: number | string;
+  categoria: string;
+  imagem_url: string;
+  descricao: string;
+  composicao: string;
+  tamanhos: string[] | null;
+  cores: unknown;
+  ativo: boolean;
+};
+
+export function mapProduto(r: Row): Product {
+  const cores = Array.isArray(r.cores) ? (r.cores as Cor[]) : [];
+  return {
+    id: r.id,
+    nome: r.nome,
+    preco: Number(r.preco),
+    categoria: r.categoria,
+    imagem: r.imagem_url,
+    descricao: r.descricao,
+    composicao: r.composicao,
+    tamanhos: r.tamanhos ?? [],
+    cores,
+    ativo: r.ativo,
+  };
+}
+
+export async function listarProdutos(incluirInativos = false): Promise<Product[]> {
+  let q = supabase.from("products").select("*").order("created_at", { ascending: false });
+  if (!incluirInativos) q = q.eq("ativo", true);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []).map((r) => mapProduto(r as unknown as Row));
+}
+
+export function useProdutos(incluirInativos = false) {
+  return useQuery({
+    queryKey: ["produtos", incluirInativos],
+    queryFn: () => listarProdutos(incluirInativos),
+  });
+}
+
+export function useProduto(id: string) {
+  return useQuery({
+    queryKey: ["produto", id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("products").select("*").eq("id", id).maybeSingle();
+      if (error) throw error;
+      return data ? mapProduto(data as unknown as Row) : null;
+    },
+  });
 }
 
 export const brl = (v: number) =>
