@@ -4,6 +4,7 @@ import { useState } from "react";
 import logo from "@/assets/excellence-logo.png.asset.json";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
+import { SearchDialog } from "@/components/SearchDialog";
 
 const links = [
   { label: "Novidades", to: "/" },
@@ -37,6 +38,7 @@ export function StoreHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
+          <SearchDialog />
           <Link
             to="/conta"
             className="inline-flex h-10 items-center gap-1.5 rounded-md px-2 text-sm transition-colors hover:bg-silver-foreground/10"
