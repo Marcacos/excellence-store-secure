@@ -4,6 +4,7 @@ import { useState } from "react";
 import logo from "@/assets/excellence-logo.png.asset.json";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
+import { SearchDialog } from "@/components/SearchDialog";
 
 const links = [
   { label: "Novidades", to: "/" },
