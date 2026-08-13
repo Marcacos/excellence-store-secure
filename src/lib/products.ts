@@ -12,6 +12,7 @@ export type Product = {
   descricao: string;
   composicao: string;
   tamanhos: string[];
+  cores: { nome: string; hex: string }[];
 };
 
 export const produtos: Product[] = [
@@ -25,6 +26,7 @@ export const produtos: Product[] = [
       "Camiseta da nova coleção Stam em algodão pima de gramatura alta, com caimento reto e acabamento premium.",
     composicao: "100% algodão pima · 190 g/m² · Gola reforçada",
     tamanhos: ["P", "M", "G", "GG"],
+    cores: [{ nome: "Preto", hex: "#111111" }, { nome: "Grafite", hex: "#3a3a3a" }, { nome: "Branco", hex: "#f5f5f5" }],
   },
   {
     id: "stam-branca",
@@ -36,6 +38,7 @@ export const produtos: Product[] = [
       "O básico definitivo da coleção Stam: branco puro, toque macio e resistência à lavagem.",
     composicao: "100% algodão penteado · 180 g/m² · Costura dupla",
     tamanhos: ["P", "M", "G", "GG"],
+    cores: [{ nome: "Branco", hex: "#f5f5f5" }, { nome: "Off-white", hex: "#e6e1d8" }, { nome: "Preto", hex: "#111111" }],
   },
   {
     id: "stam-cinza",
@@ -47,6 +50,7 @@ export const produtos: Product[] = [
       "Cinza mescla em fio penteado, versátil para o dia a dia com modelagem confortável.",
     composicao: "90% algodão / 10% viscose · 185 g/m²",
     tamanhos: ["P", "M", "G", "GG"],
+    cores: [{ nome: "Cinza Mescla", hex: "#9a9a9a" }, { nome: "Chumbo", hex: "#4a4f55" }, { nome: "Preto", hex: "#111111" }],
   },
   {
     id: "stam-marinho",
@@ -58,6 +62,7 @@ export const produtos: Product[] = [
       "Azul marinho profundo com tingimento reativo que preserva a cor por mais tempo.",
     composicao: "100% algodão · 190 g/m² · Tingimento reativo",
     tamanhos: ["PP", "P", "M", "G"],
+    cores: [{ nome: "Azul Marinho", hex: "#1e2a44" }, { nome: "Azul Claro", hex: "#8fa8c8" }, { nome: "Branco", hex: "#f5f5f5" }],
   },
 ];
 
