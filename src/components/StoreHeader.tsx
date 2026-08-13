@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { ShoppingBag, Menu } from "lucide-react";
+import { ShoppingBag, Menu, User } from "lucide-react";
 import { useState } from "react";
 import logo from "@/assets/excellence-logo.png.asset.json";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth";
 
 const links = [
   { label: "Novidades", to: "/" },
@@ -13,6 +14,7 @@ const links = [
 
 export function StoreHeader() {
   const { quantidade } = useCart();
+  const { user } = useAuth();
   const [aberto, setAberto] = useState(false);
 
   return (
@@ -36,13 +38,21 @@ export function StoreHeader() {
 
         <div className="ml-auto flex items-center gap-1">
           <Link
+            to="/conta"
+            className="inline-flex h-10 items-center gap-1.5 rounded-md px-2 text-sm transition-colors hover:bg-silver-foreground/10"
+            aria-label={user ? "Minha conta" : "Criar conta ou entrar"}
+          >
+            <User className="h-5 w-5" />
+            <span className="hidden sm:inline">{user ? "Minha conta" : "Criar conta"}</span>
+          </Link>
+          <Link
             to="/carrinho"
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-md transition-colors hover:bg-foreground/5"
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-md transition-colors hover:bg-silver-foreground/10"
             aria-label="Carrinho de compras"
           >
             <ShoppingBag className="h-5 w-5" />
             {quantidade > 0 && (
-              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-semibold text-background">
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-silver-foreground px-1 text-[10px] font-semibold text-silver">
                 {quantidade}
               </span>
             )}
@@ -58,7 +68,7 @@ export function StoreHeader() {
       </div>
 
       {aberto && (
-        <nav className="border-t border-foreground/10 silver-bar px-4 pb-3 md:hidden">
+        <nav className="border-t border-silver-foreground/15 silver-bar px-4 pb-3 md:hidden">
           {links.map((l) => (
             <Link
               key={l.label}
