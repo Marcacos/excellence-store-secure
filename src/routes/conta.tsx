@@ -1,0 +1,152 @@
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { z } from "zod";
+import { toast } from "sonner";
+import { StoreHeader } from "@/components/StoreHeader";
+import { StoreFooter } from "@/components/StoreFooter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+
+export const Route = createFileRoute("/conta")({
+  head: () => ({
+    meta: [
+      { title: "Criar conta ou entrar — Excellence Store" },
+      {
+        name: "description",
+        content:
+          "Crie sua conta na Excellence Store para finalizar compras com segurança e acompanhar seus pedidos.",
+      },
+      { property: "og:title", content: "Criar conta — Excellence Store" },
+      {
+        property: "og:description",
+        content: "Conta gratuita para comprar com segurança na Excellence Store.",
+      },
+    ],
+  }),
+  component: ContaPage,
+});
+
+const schema = z.object({
+  nome: z.string().trim().min(2, "Informe seu nome").max(100).optional(),
+  email: z.string().trim().email("E-mail inválido").max(255),
+  senha: z.string().min(6, "A senha precisa ter ao menos 6 caracteres").max(72),
+});
+
+function ContaPage() {
+  const { user, sair } = useAuth();
+  const navigate = useNavigate();
+  const [modo, setModo] = useState<"cadastro" | "login">("cadastro");
+  const [erros, setErros] = useState<Record<string, string>>({});
+  const [enviando, setEnviando] = useState(false);
+
+  async function enviar(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const dados = Object.fromEntries(new FormData(e.currentTarget));
+    const r = schema.safeParse(dados);
+    if (!r.success) {
+      const map: Record<string, string> = {};
+      for (const issue of r.error.issues) map[String(issue.path[0])] = issue.message;
+      setErros(map);
+      return;
+    }
+    setErros({});
+    setEnviando(true);
+    try {
+      if (modo === "cadastro") {
+        const { error } = await supabase.auth.signUp({
+          email: r.data.email,
+          password: r.data.senha,
+          options: {
+            emailRedirectTo: `${window.location.origin}/carrinho`,
+            data: { nome: r.data.nome ?? "" },
+          },
+        });
+        if (error) throw error;
+        toast.success("Conta criada!", { description: "Agora você já pode finalizar sua compra." });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: r.data.email,
+          password: r.data.senha,
+        });
+        if (error) throw error;
+        toast.success("Bem-vindo de volta!");
+      }
+      void navigate({ to: "/carrinho" });
+    } catch (err) {
+      toast.error("Não foi possível continuar", {
+        description: err instanceof Error ? err.message : "Tente novamente.",
+      });
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <StoreHeader />
+      <main className="mx-auto max-w-md px-4 py-16">
+        {user ? (
+          <div className="rounded-lg border border-border p-8 text-center">
+            <h1 className="text-xl font-semibold tracking-tight">Sua conta</h1>
+            <p className="mt-2 text-sm text-muted-foreground">{user.email}</p>
+            <Button asChild className="mt-6 w-full">
+              <Link to="/carrinho">Ir para o carrinho</Link>
+            </Button>
+            <Button variant="outline" className="mt-3 w-full" onClick={() => void sair()}>
+              Sair da conta
+            </Button>
+          </div>
+        ) : (
+          <>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {modo === "cadastro" ? "Criar conta" : "Entrar"}
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              É necessário ter uma conta para comprar na Excellence Store.
+            </p>
+
+            <form onSubmit={enviar} className="mt-8 space-y-4">
+              {modo === "cadastro" && (
+                <div>
+                  <Label htmlFor="nome">Nome completo</Label>
+                  <Input id="nome" name="nome" maxLength={100} className="mt-1" />
+                  {erros["nome"] && (
+                    <p className="mt-1 text-xs text-destructive">{erros["nome"]}</p>
+                  )}
+                </div>
+              )}
+              <div>
+                <Label htmlFor="email">E-mail</Label>
+                <Input id="email" name="email" type="email" maxLength={255} className="mt-1" />
+                {erros["email"] && (
+                  <p className="mt-1 text-xs text-destructive">{erros["email"]}</p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="senha">Senha</Label>
+                <Input id="senha" name="senha" type="password" maxLength={72} className="mt-1" />
+                {erros["senha"] && (
+                  <p className="mt-1 text-xs text-destructive">{erros["senha"]}</p>
+                )}
+              </div>
+              <Button type="submit" className="w-full" disabled={enviando}>
+                {modo === "cadastro" ? "Criar conta" : "Entrar"}
+              </Button>
+            </form>
+
+            <button
+              onClick={() => setModo((m) => (m === "cadastro" ? "login" : "cadastro"))}
+              className="mt-6 w-full text-sm text-muted-foreground underline underline-offset-4"
+            >
+              {modo === "cadastro" ? "Já tenho conta — entrar" : "Não tenho conta — criar agora"}
+            </button>
+          </>
+        )}
+      </main>
+      <StoreFooter />
+    </div>
+  );
+}
