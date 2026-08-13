@@ -16,7 +16,7 @@ export function StoreHeader() {
   const [aberto, setAberto] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-silver text-silver-foreground shadow-sm">
+    <header className="sticky top-0 z-40 silver-bar text-silver-foreground shadow-sm">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
         <Link to="/" className="flex items-center" aria-label="Excellence Store — início">
           <img src={logo.url} alt="Excellence Store" className="h-9 w-auto rounded-sm" />
@@ -58,7 +58,7 @@ export function StoreHeader() {
       </div>
 
       {aberto && (
-        <nav className="border-t border-foreground/10 bg-silver px-4 pb-3 md:hidden">
+        <nav className="border-t border-foreground/10 silver-bar px-4 pb-3 md:hidden">
           {links.map((l) => (
             <Link
               key={l.label}

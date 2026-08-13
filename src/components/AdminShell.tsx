@@ -6,7 +6,7 @@ import logo from "@/assets/excellence-logo.jpg.asset.json";
 export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-secondary/40">
-      <header className="bg-silver text-silver-foreground shadow-sm">
+      <header className="silver-bar text-silver-foreground shadow-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
           <img src={logo.url} alt="Excellence Store" className="h-8 w-auto rounded-sm" />
           <span className="text-sm font-medium">Painel do proprietário</span>
