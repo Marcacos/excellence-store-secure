@@ -37,6 +37,7 @@ export function StoreHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
+          <SearchDialog />
           <Link
             to="/conta"
             className="inline-flex h-10 items-center gap-1.5 rounded-md px-2 text-sm transition-colors hover:bg-silver-foreground/10"
