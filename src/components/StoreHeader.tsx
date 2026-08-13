@@ -29,7 +29,9 @@ export function StoreHeader() {
           {links.map((l) => (
             <Link
               key={l.label}
-              to={l.to}
+              to="/categoria/$slug"
+              params={{ slug: l.slug }}
+              activeProps={{ className: "text-silver-foreground" }}
               className="text-sm font-medium tracking-wide text-silver-foreground/80 transition-colors hover:text-silver-foreground"
             >
               {l.label}
