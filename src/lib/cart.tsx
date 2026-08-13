@@ -1,16 +1,16 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { produtos, type Product } from "./products";
 
-export type CartLine = { id: string; tamanho: string; qtd: number };
+export type CartLine = { id: string; tamanho: string; cor: string; qtd: number };
 
 type CartCtx = {
   linhas: CartLine[];
   itens: (CartLine & { produto: Product })[];
   total: number;
   quantidade: number;
-  adicionar: (id: string, tamanho: string, qtd?: number) => void;
-  remover: (id: string, tamanho: string) => void;
-  alterarQtd: (id: string, tamanho: string, qtd: number) => void;
+  adicionar: (id: string, tamanho: string, cor: string, qtd?: number) => void;
+  remover: (id: string, tamanho: string, cor: string) => void;
+  alterarQtd: (id: string, tamanho: string, cor: string, qtd: number) => void;
   limpar: () => void;
 };
 
@@ -50,20 +50,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
       itens,
       total: itens.reduce((s, i) => s + i.produto.preco * i.qtd, 0),
       quantidade: itens.reduce((s, i) => s + i.qtd, 0),
-      adicionar: (id, tamanho, qtd = 1) =>
+      adicionar: (id, tamanho, cor, qtd = 1) =>
         setLinhas((prev) => {
-          const atual = prev.find((l) => l.id === id && l.tamanho === tamanho);
-          if (!atual) return [...prev, { id, tamanho, qtd }];
-          return prev.map((l) =>
-            l.id === id && l.tamanho === tamanho ? { ...l, qtd: l.qtd + qtd } : l,
-          );
+          const igual = (l: CartLine) => l.id === id && l.tamanho === tamanho && l.cor === cor;
+          if (!prev.some(igual)) return [...prev, { id, tamanho, cor, qtd }];
+          return prev.map((l) => (igual(l) ? { ...l, qtd: l.qtd + qtd } : l));
         }),
-      remover: (id, tamanho) =>
-        setLinhas((prev) => prev.filter((l) => !(l.id === id && l.tamanho === tamanho))),
-      alterarQtd: (id, tamanho, qtd) =>
+      remover: (id, tamanho, cor) =>
+        setLinhas((prev) =>
+          prev.filter((l) => !(l.id === id && l.tamanho === tamanho && l.cor === cor)),
+        ),
+      alterarQtd: (id, tamanho, cor, qtd) =>
         setLinhas((prev) =>
           prev
-            .map((l) => (l.id === id && l.tamanho === tamanho ? { ...l, qtd } : l))
+            .map((l) =>
+              l.id === id && l.tamanho === tamanho && l.cor === cor ? { ...l, qtd } : l,
+            )
             .filter((l) => l.qtd > 0),
         ),
       limpar: () => setLinhas([]),
