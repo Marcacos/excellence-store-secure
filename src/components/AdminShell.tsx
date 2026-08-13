@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { LayoutDashboard, ShieldCheck, Store } from "lucide-react";
+import { LayoutDashboard, ShieldCheck, Store, Shirt, LogOut } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 import logo from "@/assets/excellence-logo.png.asset.json";
 
 export function AdminShell({ children }: { children: ReactNode }) {
+  const { sair } = useAuth();
   return (
     <div className="min-h-screen bg-secondary/40">
       <header className="silver-bar text-silver-foreground shadow-sm">
@@ -20,6 +22,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <LayoutDashboard className="h-4 w-4" /> <span className="hidden sm:inline">Dashboard</span>
             </Link>
             <Link
+              to="/admin/produtos"
+              activeProps={{ className: "bg-foreground/10" }}
+              className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 hover:bg-foreground/5"
+            >
+              <Shirt className="h-4 w-4" /> <span className="hidden sm:inline">Produtos</span>
+            </Link>
+            <Link
               to="/admin/seguranca"
               activeProps={{ className: "bg-foreground/10" }}
               className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 hover:bg-foreground/5"
@@ -32,6 +41,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
             >
               <Store className="h-4 w-4" /> <span className="hidden sm:inline">Loja</span>
             </Link>
+            <button
+              onClick={() => void sair()}
+              className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 hover:bg-foreground/5"
+            >
+              <LogOut className="h-4 w-4" /> <span className="hidden sm:inline">Sair</span>
+            </button>
           </nav>
         </div>
       </header>
