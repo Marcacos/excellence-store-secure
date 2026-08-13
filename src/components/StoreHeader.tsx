@@ -7,10 +7,10 @@ import { useAuth } from "@/lib/auth";
 import { SearchDialog } from "@/components/SearchDialog";
 
 const links = [
-  { label: "Novidades", to: "/" },
-  { label: "Masculino", to: "/" },
-  { label: "Feminino", to: "/" },
-  { label: "Acessórios", to: "/" },
+  { label: "Novidades", slug: "novidades" },
+  { label: "Masculino", slug: "masculino" },
+  { label: "Feminino", slug: "feminino" },
+  { label: "Acessórios", slug: "acessorios" },
 ] as const;
 
 export function StoreHeader() {
@@ -29,7 +29,9 @@ export function StoreHeader() {
           {links.map((l) => (
             <Link
               key={l.label}
-              to={l.to}
+              to="/categoria/$slug"
+              params={{ slug: l.slug }}
+              activeProps={{ className: "text-silver-foreground" }}
               className="text-sm font-medium tracking-wide text-silver-foreground/80 transition-colors hover:text-silver-foreground"
             >
               {l.label}
@@ -74,7 +76,8 @@ export function StoreHeader() {
           {links.map((l) => (
             <Link
               key={l.label}
-              to={l.to}
+              to="/categoria/$slug"
+              params={{ slug: l.slug }}
               onClick={() => setAberto(false)}
               className="block py-2 text-sm font-medium text-silver-foreground/85"
             >
