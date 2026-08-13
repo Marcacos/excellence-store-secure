@@ -76,7 +76,8 @@ export function StoreHeader() {
           {links.map((l) => (
             <Link
               key={l.label}
-              to={l.to}
+              to="/categoria/$slug"
+              params={{ slug: l.slug }}
               onClick={() => setAberto(false)}
               className="block py-2 text-sm font-medium text-silver-foreground/85"
             >
