@@ -1,25 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import {
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  Cell,
-  Tooltip,
-  XAxis,
-} from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { Line, LineChart, Pie, PieChart, Cell, Tooltip, XAxis } from "recharts";
 import { TrendingUp, Package, Star, Users } from "lucide-react";
 import { AdminShell } from "@/components/AdminShell";
 import { Input } from "@/components/ui/input";
 import { brl } from "@/lib/products";
-import { vendasPorMes, pedidosPorStatus, maisVendidos, pedidos } from "@/lib/admin-data";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin/")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Dashboard de Métricas — Excellence Store" },
-      { name: "description", content: "Vendas, pedidos e desempenho da loja em um só painel." },
+      { name: "description", content: "Vendas, pedidos e desempenho real da loja em um só painel." },
       { name: "robots", content: "noindex" },
       { property: "og:title", content: "Dashboard — Excellence Store" },
       { property: "og:description", content: "Painel privado de métricas da Excellence Store." },
@@ -29,6 +23,17 @@ export const Route = createFileRoute("/admin/")({
 });
 
 const FATIAS = ["oklch(0.35 0 0)", "oklch(0.55 0 0)", "oklch(0.72 0 0)", "oklch(0.85 0 0)"];
+const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+
+type Pedido = {
+  id: string;
+  cliente_nome: string;
+  total: number;
+  status: string;
+  created_at: string;
+};
+
+type Item = { nome: string; qtd: number };
 
 function Card({
   titulo,
@@ -53,53 +58,113 @@ function Card({
   );
 }
 
+function useMetricas() {
+  return useQuery({
+    queryKey: ["admin-metricas"],
+    queryFn: async () => {
+      const [pedidosRes, itensRes, visitasRes] = await Promise.all([
+        supabase
+          .from("orders")
+          .select("id, cliente_nome, total, status, created_at")
+          .order("created_at", { ascending: false }),
+        supabase.from("order_items").select("nome, qtd"),
+        supabase.from("site_visits").select("id", { count: "exact", head: true }),
+      ]);
+      if (pedidosRes.error) throw pedidosRes.error;
+      if (itensRes.error) throw itensRes.error;
+      return {
+        pedidos: (pedidosRes.data ?? []) as Pedido[],
+        itens: (itensRes.data ?? []) as Item[],
+        visitas: visitasRes.count ?? 0,
+      };
+    },
+  });
+}
+
 function Dashboard() {
   const [busca, setBusca] = useState("");
+  const { data, isLoading } = useMetricas();
+
+  const pedidos = useMemo(() => data?.pedidos ?? [], [data]);
+
+  const vendasPorMes = useMemo(() => {
+    const agora = new Date();
+    const buckets: { mes: string; total: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(agora.getFullYear(), agora.getMonth() - i, 1);
+      buckets.push({ mes: MESES[d.getMonth()]!, total: 0 });
+    }
+    for (const p of pedidos) {
+      const d = new Date(p.created_at);
+      const diff =
+        (agora.getFullYear() - d.getFullYear()) * 12 + (agora.getMonth() - d.getMonth());
+      if (diff >= 0 && diff <= 5) buckets[5 - diff]!.total += Number(p.total);
+    }
+    return buckets;
+  }, [pedidos]);
+
+  const porStatus = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const p of pedidos) m.set(p.status, (m.get(p.status) ?? 0) + 1);
+    return [...m].map(([status, valor]) => ({ status, valor }));
+  }, [pedidos]);
+
+  const maisVendidos = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const i of data?.itens ?? []) m.set(i.nome, (m.get(i.nome) ?? 0) + i.qtd);
+    return [...m]
+      .map(([nome, unidades]) => ({ nome, unidades }))
+      .sort((a, b) => b.unidades - a.unidades);
+  }, [data]);
+
   const filtrados = useMemo(() => {
     const q = busca.trim().toLowerCase();
     if (!q) return pedidos;
     return pedidos.filter((p) =>
-      [p.id, p.cliente, p.data, p.status].some((c) => c.toLowerCase().includes(q)),
+      [p.id, p.cliente_nome, p.status].some((c) => c.toLowerCase().includes(q)),
     );
-  }, [busca]);
+  }, [busca, pedidos]);
 
-  const totalVendas = vendasPorMes.reduce((s, v) => s + v.total, 0);
+  const totalVendas = pedidos.reduce((s, p) => s + Number(p.total), 0);
 
   return (
     <AdminShell>
       <h1 className="text-xl font-semibold tracking-tight">Dashboard de Métricas</h1>
+      {isLoading && <p className="mt-3 text-sm text-muted-foreground">Carregando dados reais...</p>}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card titulo="Vendas totais" valor={brl(totalVendas)} icone={<TrendingUp className="h-4 w-4" />}>
           <div className="mt-3 overflow-hidden">
-              <LineChart data={vendasPorMes} width={200} height={72} margin={{ top: 4, bottom: 4, left: 0, right: 0 }}>
-                <XAxis dataKey="mes" hide />
-                <Tooltip formatter={(v: number) => brl(v)} />
-                <Line
-                  type="monotone"
-                  dataKey="total"
-                  stroke="oklch(0.3 0 0)"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
+            <LineChart data={vendasPorMes} width={200} height={72} margin={{ top: 4, bottom: 4, left: 0, right: 0 }}>
+              <XAxis dataKey="mes" hide />
+              <Tooltip formatter={(v: number) => brl(v)} />
+              <Line type="monotone" dataKey="total" stroke="oklch(0.3 0 0)" strokeWidth={2} dot={false} />
+            </LineChart>
           </div>
         </Card>
 
-        <Card titulo="Novos pedidos" valor="128" icone={<Package className="h-4 w-4" />}>
+        <Card titulo="Pedidos" valor={String(pedidos.length)} icone={<Package className="h-4 w-4" />}>
           <div className="mt-3 overflow-hidden">
+            {porStatus.length > 0 ? (
               <PieChart width={200} height={80}>
                 <Tooltip />
-                <Pie data={pedidosPorStatus} dataKey="valor" nameKey="status" cx={40} cy={40} innerRadius={18} outerRadius={38}>
-                  {pedidosPorStatus.map((_, i) => (
+                <Pie data={porStatus} dataKey="valor" nameKey="status" cx={40} cy={40} innerRadius={18} outerRadius={38}>
+                  {porStatus.map((_, i) => (
                     <Cell key={i} fill={FATIAS[i % FATIAS.length]} />
                   ))}
                 </Pie>
               </PieChart>
+            ) : (
+              <p className="text-xs text-muted-foreground">Nenhum pedido ainda.</p>
+            )}
           </div>
         </Card>
 
-        <Card titulo="Mais vendidos" valor={`${maisVendidos[0]!.unidades} un.`} icone={<Star className="h-4 w-4" />}>
+        <Card
+          titulo="Mais vendidos"
+          valor={maisVendidos[0] ? `${maisVendidos[0].unidades} un.` : "—"}
+          icone={<Star className="h-4 w-4" />}
+        >
           <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
             {maisVendidos.slice(0, 3).map((m) => (
               <li key={m.nome} className="flex justify-between gap-2">
@@ -107,11 +172,16 @@ function Dashboard() {
                 <span>{m.unidades}</span>
               </li>
             ))}
+            {maisVendidos.length === 0 && <li>Sem vendas registradas.</li>}
           </ul>
         </Card>
 
-        <Card titulo="Visitantes do site" valor="24.318" icone={<Users className="h-4 w-4" />}>
-          <p className="mt-3 text-xs text-muted-foreground">+12,4% vs. mês anterior</p>
+        <Card
+          titulo="Visitas ao site"
+          valor={(data?.visitas ?? 0).toLocaleString("pt-BR")}
+          icone={<Users className="h-4 w-4" />}
+        >
+          <p className="mt-3 text-xs text-muted-foreground">Acessos registrados nas páginas da loja</p>
         </Card>
       </div>
 
@@ -138,12 +208,14 @@ function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {filtrados.map((p) => (
+              {filtrados.slice(0, 20).map((p) => (
                 <tr key={p.id} className="border-b border-border last:border-0">
-                  <td className="px-5 py-3 font-medium">{p.id}</td>
-                  <td className="px-5 py-3">{p.cliente}</td>
-                  <td className="px-5 py-3 text-muted-foreground">{p.data}</td>
-                  <td className="px-5 py-3">{brl(p.total)}</td>
+                  <td className="px-5 py-3 font-medium">#{p.id.slice(0, 8)}</td>
+                  <td className="px-5 py-3">{p.cliente_nome}</td>
+                  <td className="px-5 py-3 text-muted-foreground">
+                    {new Date(p.created_at).toLocaleDateString("pt-BR")}
+                  </td>
+                  <td className="px-5 py-3">{brl(Number(p.total))}</td>
                   <td className="px-5 py-3">
                     <span className="rounded-full bg-secondary px-2.5 py-1 text-xs">{p.status}</span>
                   </td>
