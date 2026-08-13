@@ -6,6 +6,7 @@ import { StoreFooter } from "@/components/StoreFooter";
 import { Button } from "@/components/ui/button";
 import { getProduto, brl } from "@/lib/products";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/produto/$id")({
   loader: ({ params }) => {
@@ -52,7 +53,9 @@ function ProdutoPage() {
   const { produto } = Route.useLoaderData();
   const { adicionar } = useCart();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [tamanho, setTamanho] = useState(produto.tamanhos[1] ?? produto.tamanhos[0]!);
+  const [cor, setCor] = useState(produto.cores[0]!.nome);
   const [zoom, setZoom] = useState(false);
 
   return (
@@ -76,6 +79,22 @@ function ProdutoPage() {
           <h1 className="text-2xl font-semibold tracking-tight">{produto.nome}</h1>
           <p className="mt-2 text-xl">{brl(produto.preco)}</p>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{produto.descricao}</p>
+
+          <h2 className="mt-8 text-sm font-semibold">Cor: {cor}</h2>
+          <div className="mt-2 flex gap-2">
+            {produto.cores.map((c) => (
+              <button
+                key={c.nome}
+                onClick={() => setCor(c.nome)}
+                aria-label={`Cor ${c.nome}`}
+                aria-pressed={c.nome === cor}
+                className={`h-9 w-9 rounded-full border-2 transition-colors ${
+                  c.nome === cor ? "border-foreground" : "border-border"
+                }`}
+                style={{ backgroundColor: c.hex }}
+              />
+            ))}
+          </div>
 
           <h2 className="mt-8 text-sm font-semibold">Tamanho</h2>
           <div className="mt-2 flex gap-2">
@@ -101,7 +120,12 @@ function ProdutoPage() {
             <Button
               className="sm:flex-1"
               onClick={() => {
-                adicionar(produto.id, tamanho);
+                if (!user) {
+                  toast.info("Crie sua conta para comprar");
+                  void navigate({ to: "/conta" });
+                  return;
+                }
+                adicionar(produto.id, tamanho, cor);
                 void navigate({ to: "/carrinho" });
               }}
             >
@@ -111,8 +135,15 @@ function ProdutoPage() {
               variant="outline"
               className="sm:flex-1"
               onClick={() => {
-                adicionar(produto.id, tamanho);
-                toast.success("Adicionado ao carrinho", { description: `${produto.nome} · ${tamanho}` });
+                if (!user) {
+                  toast.info("Crie sua conta para comprar");
+                  void navigate({ to: "/conta" });
+                  return;
+                }
+                adicionar(produto.id, tamanho, cor);
+                toast.success("Adicionado ao carrinho", {
+                  description: `${produto.nome} · ${cor} · ${tamanho}`,
+                });
               }}
             >
               Adicionar ao Carrinho
