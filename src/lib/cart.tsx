@@ -52,11 +52,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       quantidade: itens.reduce((s, i) => s + i.qtd, 0),
       adicionar: (id, tamanho, qtd = 1) =>
         setLinhas((prev) => {
-          const i = prev.findIndex((l) => l.id === id && l.tamanho === tamanho);
-          if (i === -1) return [...prev, { id, tamanho, qtd }];
-          const copia = [...prev];
-          copia[i] = { ...copia[i], qtd: copia[i].qtd + qtd };
-          return copia;
+          const atual = prev.find((l) => l.id === id && l.tamanho === tamanho);
+          if (!atual) return [...prev, { id, tamanho, qtd }];
+          return prev.map((l) =>
+            l.id === id && l.tamanho === tamanho ? { ...l, qtd: l.qtd + qtd } : l,
+          );
         }),
       remover: (id, tamanho) =>
         setLinhas((prev) => prev.filter((l) => !(l.id === id && l.tamanho === tamanho))),
