@@ -6,6 +6,7 @@ type AuthCtx = {
   session: Session | null;
   user: User | null;
   isAdmin: boolean;
+  papelCarregando: boolean;
   carregando: boolean;
   sair: () => Promise<void>;
 };
@@ -15,6 +16,7 @@ const Ctx = createContext<AuthCtx | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [papelCarregando, setPapelCarregando] = useState(true);
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
@@ -33,9 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const uid = session?.user.id;
     if (!uid) {
       setIsAdmin(false);
+      setPapelCarregando(false);
       return;
     }
     let ativo = true;
+    setPapelCarregando(true);
     void supabase
       .from("user_roles")
       .select("role")
@@ -43,7 +47,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("role", "admin")
       .maybeSingle()
       .then(({ data }) => {
-        if (ativo) setIsAdmin(Boolean(data));
+        if (ativo) {
+          setIsAdmin(Boolean(data));
+          setPapelCarregando(false);
+        }
       });
     return () => {
       ativo = false;
@@ -56,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         user: session?.user ?? null,
         isAdmin,
+        papelCarregando,
         carregando,
         sair: async () => {
           await supabase.auth.signOut();

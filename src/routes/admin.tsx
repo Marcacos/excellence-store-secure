@@ -8,7 +8,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminLayout() {
-  const { user, isAdmin, carregando } = useAuth();
+  const { user, isAdmin, carregando, papelCarregando } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,7 +16,7 @@ function AdminLayout() {
     if (!user) void navigate({ to: "/conta", replace: true });
   }, [carregando, user, navigate]);
 
-  if (carregando || !user) {
+  if (carregando || !user || papelCarregando) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
         Verificando acesso...
