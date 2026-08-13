@@ -6,7 +6,6 @@ import {
   Pie,
   PieChart,
   Cell,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
 } from "recharts";
@@ -72,9 +71,8 @@ function Dashboard() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card titulo="Vendas totais" valor={brl(totalVendas)} icone={<TrendingUp className="h-4 w-4" />}>
-          <div className="mt-3 h-20">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={vendasPorMes} margin={{ top: 4, bottom: 4, left: 0, right: 0 }}>
+          <div className="mt-3 overflow-hidden">
+              <LineChart data={vendasPorMes} width={200} height={72} margin={{ top: 4, bottom: 4, left: 0, right: 0 }}>
                 <XAxis dataKey="mes" hide />
                 <Tooltip formatter={(v: number) => brl(v)} />
                 <Line
@@ -85,22 +83,19 @@ function Dashboard() {
                   dot={false}
                 />
               </LineChart>
-            </ResponsiveContainer>
           </div>
         </Card>
 
         <Card titulo="Novos pedidos" valor="128" icone={<Package className="h-4 w-4" />}>
-          <div className="mt-3 h-20">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+          <div className="mt-3 overflow-hidden">
+              <PieChart width={200} height={80}>
                 <Tooltip />
-                <Pie data={pedidosPorStatus} dataKey="valor" nameKey="status" innerRadius={18} outerRadius={38}>
+                <Pie data={pedidosPorStatus} dataKey="valor" nameKey="status" cx={40} cy={40} innerRadius={18} outerRadius={38}>
                   {pedidosPorStatus.map((_, i) => (
                     <Cell key={i} fill={FATIAS[i % FATIAS.length]} />
                   ))}
                 </Pie>
               </PieChart>
-            </ResponsiveContainer>
           </div>
         </Card>
 
