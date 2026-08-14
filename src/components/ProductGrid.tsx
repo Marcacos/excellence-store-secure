@@ -9,28 +9,35 @@ export function ProductGrid({
   onSelecionar: (p: Product) => void;
 }) {
   return (
-    <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4">
+    <div className="mt-8 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4">
       {produtos.map((p) => (
-        <article key={p.id} className="group">
+        <article key={p.id} className="store-card store-card-hover group overflow-hidden">
           <button onClick={() => onSelecionar(p)} className="block w-full text-left">
-            <div className="overflow-hidden rounded-md bg-secondary">
+            <div className="overflow-hidden bg-secondary">
               {p.imagem ? (
                 <img
                   src={p.imagem}
                   alt={p.nome}
                   loading="lazy"
-                  className="aspect-[9/11] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  className="aspect-[9/11] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                 />
               ) : (
                 <div className="aspect-[9/11] w-full" />
               )}
             </div>
-            <h3 className="mt-3 text-sm font-medium text-foreground">{p.nome}</h3>
-            <p className="text-sm text-muted-foreground">{brl(p.preco)}</p>
+            <div className="px-3 pt-3">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                {p.categoria}
+              </p>
+              <h3 className="mt-1 text-sm font-medium leading-snug text-foreground">{p.nome}</h3>
+              <p className="mt-1 text-sm font-semibold text-foreground">{brl(p.preco)}</p>
+            </div>
           </button>
-          <Button variant="outline" className="mt-3 w-full" onClick={() => onSelecionar(p)}>
-            Selecionar opções
-          </Button>
+          <div className="p-3 pt-3">
+            <Button variant="outline" className="w-full" onClick={() => onSelecionar(p)}>
+              Selecionar opções
+            </Button>
+          </div>
         </article>
       ))}
     </div>
