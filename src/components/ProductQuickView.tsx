@@ -55,29 +55,29 @@ export function ProductQuickView({
           <DialogDescription>{produto.descricao}</DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-6 sm:grid-cols-[160px_1fr]">
+        <div className="grid gap-6 sm:grid-cols-[180px_1fr]">
           <img
             src={produto.imagem}
             alt={produto.nome}
             loading="lazy"
             width={900}
             height={1100}
-            className="aspect-[9/11] w-full rounded-md object-cover"
+            className="aspect-[9/11] w-full rounded-lg object-cover shadow-sm"
           />
 
           <div>
-            <p className="text-lg font-semibold">{brl(produto.preco)}</p>
+            <p className="text-xl font-semibold">{brl(produto.preco)}</p>
 
             <h3 className="mt-5 text-sm font-semibold">Cor: {cor}</h3>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-2.5 flex gap-2">
               {produto.cores.map((c) => (
                 <button
                   key={c.nome}
                   onClick={() => setCor(c.nome)}
                   aria-label={`Cor ${c.nome}`}
                   aria-pressed={c.nome === cor}
-                  className={`h-8 w-8 rounded-full border-2 transition-colors ${
-                    c.nome === cor ? "border-foreground" : "border-border"
+                  className={`h-8 w-8 rounded-full border-2 shadow-sm transition-all ${
+                    c.nome === cor ? "border-foreground ring-2 ring-foreground/15 ring-offset-2" : "border-border hover:scale-105"
                   }`}
                   style={{ backgroundColor: c.hex }}
                 />
@@ -85,12 +85,12 @@ export function ProductQuickView({
             </div>
 
             <h3 className="mt-5 text-sm font-semibold">Tamanho</h3>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-2.5 flex gap-2">
               {produto.tamanhos.map((t) => (
                 <button
                   key={t}
                   onClick={() => setTamanho(t)}
-                  className={`h-10 w-12 rounded-md border text-sm transition-colors ${
+                  className={`h-10 w-12 rounded-md border text-sm font-medium transition-colors ${
                     t === tamanho
                       ? "border-foreground bg-foreground text-background"
                       : "border-border hover:bg-secondary"
@@ -101,7 +101,7 @@ export function ProductQuickView({
               ))}
             </div>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Button
                 variant="outline"
                 className="sm:flex-1"

@@ -8,7 +8,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const { sair } = useAuth();
   return (
     <div className="min-h-screen bg-secondary/40">
-      <header className="silver-bar text-silver-foreground shadow-sm">
+      <header className="sticky top-0 z-40 silver-bar text-silver-foreground shadow-[0_1px_0_0_oklch(0_0_0/8%),0_8px_20px_-12px_oklch(0_0_0/45%)]">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
           <img src={logo.url} alt="Excellence Store" className="h-6 w-auto" />
           <span className="text-sm font-medium">Painel do proprietário</span>

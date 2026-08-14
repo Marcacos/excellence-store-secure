@@ -102,9 +102,9 @@ function ContaPage() {
   return (
     <div className="min-h-screen bg-background">
       <StoreHeader />
-      <main className="mx-auto max-w-md px-4 py-16">
+      <main className="mx-auto max-w-md px-4 py-16 sm:py-20">
         {user ? (
-          <div className="rounded-lg border border-border p-8 text-center">
+          <div className="store-card p-8 text-center shadow-sm">
             <h1 className="text-xl font-semibold tracking-tight">Sua conta</h1>
             <p className="mt-2 text-sm text-muted-foreground">{user.email}</p>
             <Button asChild className="mt-6 w-full">
@@ -115,7 +115,7 @@ function ContaPage() {
             </Button>
           </div>
         ) : (
-          <>
+          <div className="store-card p-8 shadow-sm">
             <h1 className="text-2xl font-semibold tracking-tight">
               {modo === "cadastro" ? "Criar conta" : "Entrar"}
             </h1>
@@ -127,7 +127,7 @@ function ContaPage() {
               {modo === "cadastro" && (
                 <div>
                   <Label htmlFor="nome">Nome completo</Label>
-                  <Input id="nome" name="nome" maxLength={100} className="mt-1" />
+                  <Input id="nome" name="nome" maxLength={100} className="mt-1.5" />
                   {erros["nome"] && (
                     <p className="mt-1 text-xs text-destructive">{erros["nome"]}</p>
                   )}
@@ -135,30 +135,30 @@ function ContaPage() {
               )}
               <div>
                 <Label htmlFor="email">E-mail</Label>
-                <Input id="email" name="email" type="email" maxLength={255} className="mt-1" />
+                <Input id="email" name="email" type="email" maxLength={255} className="mt-1.5" />
                 {erros["email"] && (
                   <p className="mt-1 text-xs text-destructive">{erros["email"]}</p>
                 )}
               </div>
               <div>
                 <Label htmlFor="senha">Senha</Label>
-                <Input id="senha" name="senha" type="password" maxLength={72} className="mt-1" />
+                <Input id="senha" name="senha" type="password" maxLength={72} className="mt-1.5" />
                 {erros["senha"] && (
                   <p className="mt-1 text-xs text-destructive">{erros["senha"]}</p>
                 )}
               </div>
-              <Button type="submit" className="w-full" disabled={enviando}>
+              <Button type="submit" size="lg" className="w-full" disabled={enviando}>
                 {modo === "cadastro" ? "Criar conta" : "Entrar"}
               </Button>
             </form>
 
             <button
               onClick={() => setModo((m) => (m === "cadastro" ? "login" : "cadastro"))}
-              className="mt-6 w-full text-sm text-muted-foreground underline underline-offset-4"
+              className="mt-6 w-full text-sm text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
             >
               {modo === "cadastro" ? "Já tenho conta — entrar" : "Não tenho conta — criar agora"}
             </button>
-          </>
+          </div>
         )}
       </main>
       <StoreFooter />
