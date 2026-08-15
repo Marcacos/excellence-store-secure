@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/conta")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Criar conta ou entrar — Excellence Store" },
@@ -36,7 +37,7 @@ const schema = z.object({
 });
 
 function ContaPage() {
-  const { user, isAdmin, sair } = useAuth();
+  const { user, isAdmin, sair, carregando, papelCarregando } = useAuth();
   const navigate = useNavigate();
   const [modo, setModo] = useState<"cadastro" | "login">("cadastro");
   const [erros, setErros] = useState<Record<string, string>>({});
@@ -89,7 +90,7 @@ function ContaPage() {
           return;
         }
       }
-      void navigate({ to: "/carrinho" });
+      void navigate({ to: "/" });
     } catch (err) {
       toast.error("Não foi possível continuar", {
         description: err instanceof Error ? err.message : "Tente novamente.",
@@ -103,11 +104,17 @@ function ContaPage() {
     <div className="min-h-screen bg-background">
       <StoreHeader />
       <main className="mx-auto max-w-md px-4 py-16 sm:py-20">
-        {user ? (
+        {carregando ? (
+          <div className="store-card animate-pulse p-8 shadow-sm">
+            <div className="h-6 w-2/3 rounded bg-secondary" />
+            <div className="mt-3 h-4 w-1/2 rounded bg-secondary" />
+            <div className="mt-8 h-11 w-full rounded-md bg-secondary" />
+          </div>
+        ) : user ? (
           <div className="store-card p-8 text-center shadow-sm">
             <h1 className="text-xl font-semibold tracking-tight">Sua conta</h1>
             <p className="mt-2 text-sm text-muted-foreground">{user.email}</p>
-            <Button asChild className="mt-6 w-full">
+            <Button asChild className="mt-6 w-full" disabled={papelCarregando}>
               {isAdmin ? <Link to="/admin">Ir para o painel</Link> : <Link to="/carrinho">Ir para o carrinho</Link>}
             </Button>
             <Button variant="outline" className="mt-3 w-full" onClick={() => void sair()}>

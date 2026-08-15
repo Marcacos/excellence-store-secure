@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/carrinho")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Carrinho e Checkout — Excellence Store" },
@@ -135,17 +136,17 @@ function Carrinho() {
           <div className="mt-8 grid gap-10 lg:grid-cols-[1.3fr_1fr]">
             <ul className="divide-y divide-border">
               {itens.map((i) => (
-                <li key={`${i.id}-${i.tamanho}-${i.cor}`} className="flex gap-4 py-5">
+                <li key={`${i.id}-${i.tamanho}-${i.cor}`} className="flex gap-3 py-5 sm:gap-4">
                   <img
                     src={i.imagem}
                     alt={i.nome}
                     loading="lazy"
                     width={900}
                     height={1100}
-                    className="h-24 w-20 rounded-md object-cover"
+                    className="h-20 w-16 shrink-0 rounded-md object-cover sm:h-24 sm:w-20"
                   />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{i.nome}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{i.nome}</p>
                     <p className="text-xs text-muted-foreground">{i.cor} · Tamanho {i.tamanho}</p>
                     <div className="mt-2 flex items-center gap-2">
                       <Button
@@ -176,7 +177,7 @@ function Carrinho() {
                       </button>
                     </div>
                   </div>
-                  <p className="text-sm font-medium">{brl(i.preco * i.qtd)}</p>
+                  <p className="shrink-0 text-sm font-medium">{brl(i.preco * i.qtd)}</p>
                 </li>
               ))}
             </ul>
@@ -207,8 +208,12 @@ function Carrinho() {
                 <span className="text-sm text-muted-foreground">Total</span>
                 <span className="text-lg font-semibold">{brl(total)}</span>
               </div>
-              {user ? (
-                <Button type="submit" className="mt-4 w-full" disabled={carregando || enviando}>
+              {carregando ? (
+                <Button type="button" className="mt-4 w-full" disabled>
+                  Verificando sua conta...
+                </Button>
+              ) : user ? (
+                <Button type="submit" className="mt-4 w-full" disabled={enviando}>
                   {enviando ? "Processando..." : "Pagar com segurança"}
                 </Button>
               ) : (

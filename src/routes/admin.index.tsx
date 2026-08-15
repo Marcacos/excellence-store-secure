@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Line, LineChart, Pie, PieChart, Cell, Tooltip, XAxis } from "recharts";
+import { Line, LineChart, Pie, PieChart, Cell, Tooltip, XAxis, ResponsiveContainer } from "recharts";
 import { TrendingUp, Package, Star, Users } from "lucide-react";
 import { AdminShell } from "@/components/AdminShell";
 import { Input } from "@/components/ui/input";
@@ -134,26 +134,30 @@ function Dashboard() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card titulo="Vendas totais" valor={brl(totalVendas)} icone={<TrendingUp className="h-4 w-4" />}>
-          <div className="mt-3 overflow-hidden">
-            <LineChart data={vendasPorMes} width={200} height={72} margin={{ top: 4, bottom: 4, left: 0, right: 0 }}>
-              <XAxis dataKey="mes" hide />
-              <Tooltip formatter={(v: number) => brl(v)} />
-              <Line type="monotone" dataKey="total" stroke="oklch(0.3 0 0)" strokeWidth={2} dot={false} />
-            </LineChart>
+          <div className="mt-3 h-18 w-full overflow-hidden">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={vendasPorMes} margin={{ top: 4, bottom: 4, left: 0, right: 0 }}>
+                <XAxis dataKey="mes" hide />
+                <Tooltip formatter={(v: number) => brl(v)} />
+                <Line type="monotone" dataKey="total" stroke="oklch(0.3 0 0)" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </Card>
 
         <Card titulo="Pedidos" valor={String(pedidos.length)} icone={<Package className="h-4 w-4" />}>
-          <div className="mt-3 overflow-hidden">
+          <div className="mt-3 h-20 w-full overflow-hidden">
             {porStatus.length > 0 ? (
-              <PieChart width={200} height={80}>
-                <Tooltip />
-                <Pie data={porStatus} dataKey="valor" nameKey="status" cx={40} cy={40} innerRadius={18} outerRadius={38}>
-                  {porStatus.map((_, i) => (
-                    <Cell key={i} fill={FATIAS[i % FATIAS.length]} />
-                  ))}
-                </Pie>
-              </PieChart>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Tooltip />
+                  <Pie data={porStatus} dataKey="valor" nameKey="status" cx="50%" cy="50%" innerRadius={18} outerRadius={38}>
+                    {porStatus.map((_, i) => (
+                      <Cell key={i} fill={FATIAS[i % FATIAS.length]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
             ) : (
               <p className="text-xs text-muted-foreground">Nenhum pedido ainda.</p>
             )}

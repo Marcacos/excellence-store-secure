@@ -160,7 +160,7 @@ function AdminProdutos() {
 
   return (
     <AdminShell>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold tracking-tight">Produtos</h1>
         <Button onClick={abrirNovo}>
           <Plus className="mr-1.5 h-4 w-4" /> Novo produto
