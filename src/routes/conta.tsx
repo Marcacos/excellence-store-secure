@@ -76,6 +76,20 @@ function ContaPage() {
         toast.success("Bem-vindo de volta!");
       }
 
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess.session?.user.id;
+      if (uid) {
+        const { data: papel } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", uid)
+          .eq("role", "admin")
+          .maybeSingle();
+        if (papel) {
+          void navigate({ to: "/admin" });
+          return;
+        }
+      }
       void navigate({ to: "/" });
     } catch (err) {
       toast.error("Não foi possível continuar", {
