@@ -62,15 +62,23 @@ function ContaPage() {
     setEnviando(true);
     try {
       if (modo === "cadastro") {
-        const { error } = await supabase.auth.signUp({
+        const { data: cadastro, error } = await supabase.auth.signUp({
           email: r.data.email,
           password: r.data.senha,
           options: {
-            emailRedirectTo: `${window.location.origin}/carrinho`,
+            emailRedirectTo: `${window.location.origin}${destino ?? "/carrinho"}`,
             data: { nome: r.data.nome ?? "" },
           },
         });
         if (error) throw error;
+        if (!cadastro.session) {
+          // sem sessão automática: já entra com as mesmas credenciais
+          const { error: erroLogin } = await supabase.auth.signInWithPassword({
+            email: r.data.email,
+            password: r.data.senha,
+          });
+          if (erroLogin) throw erroLogin;
+        }
         toast.success("Conta criada!", { description: "Agora você já pode finalizar sua compra." });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
