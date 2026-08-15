@@ -219,7 +219,7 @@ function Carrinho() {
               ) : (
                 <div className="mt-4">
                   <Button asChild className="w-full">
-                    <Link to="/conta">Criar conta para finalizar</Link>
+                    <Link to="/conta" search={{ redirect: "/carrinho" }}>Criar conta para finalizar</Link>
                   </Button>
                   <p className="mt-2 text-center text-xs text-muted-foreground">
                     É necessário ter uma conta para concluir a compra.

@@ -43,6 +43,7 @@ export function StoreHeader() {
           <SearchDialog />
           <Link
             to="/conta"
+            search={{}}
             className="inline-flex h-10 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors hover:bg-silver-foreground/10"
             aria-label={user ? "Minha conta" : "Criar conta ou entrar"}
           >

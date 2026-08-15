@@ -13,7 +13,7 @@ function AdminLayout() {
 
   useEffect(() => {
     if (carregando) return;
-    if (!user) void navigate({ to: "/conta", replace: true });
+    if (!user) void navigate({ to: "/conta", search: { redirect: "/admin" }, replace: true });
   }, [carregando, user, navigate]);
 
   if (carregando || !user || papelCarregando) {
