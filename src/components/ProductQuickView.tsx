@@ -43,7 +43,7 @@ export function ProductQuickView({
     toast.info("Crie sua conta para continuar", {
       description: "É necessário ter uma conta para comprar na Excellence Store.",
     });
-    void navigate({ to: "/conta" });
+    void navigate({ to: "/conta", search: { redirect: "/carrinho" } });
     return true;
   }
 

@@ -63,7 +63,7 @@ function ProdutoPage() {
   function exigirConta() {
     if (user) return false;
     toast.info("Crie sua conta para comprar");
-    void navigate({ to: "/conta" });
+    void navigate({ to: "/conta", search: { redirect: "/carrinho" } });
     return true;
   }
 

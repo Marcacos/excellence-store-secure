@@ -50,7 +50,7 @@ export function StoreFooter() {
             <h3 className="text-sm font-semibold text-foreground">Sua conta</h3>
             <ul className="mt-4 space-y-2.5">
               <li>
-                <Link to="/conta" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                <Link to="/conta" search={{}} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                   Entrar ou criar conta
                 </Link>
               </li>

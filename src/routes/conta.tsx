@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { StoreHeader } from "@/components/StoreHeader";
@@ -12,6 +12,10 @@ import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/conta")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    const r = search["redirect"];
+    return typeof r === "string" && r.startsWith("/") ? { redirect: r } : {};
+  },
   head: () => ({
     meta: [
       { title: "Criar conta ou entrar — Excellence Store" },
@@ -39,9 +43,16 @@ const schema = z.object({
 function ContaPage() {
   const { user, isAdmin, sair, carregando, papelCarregando } = useAuth();
   const navigate = useNavigate();
+  const { redirect: destino } = Route.useSearch();
   const [modo, setModo] = useState<"cadastro" | "login">("cadastro");
   const [erros, setErros] = useState<Record<string, string>>({});
   const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => {
+    if (!carregando && user && destino) {
+      void navigate({ to: destino, replace: true });
+    }
+  }, [carregando, user, destino, navigate]);
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -57,15 +68,23 @@ function ContaPage() {
     setEnviando(true);
     try {
       if (modo === "cadastro") {
-        const { error } = await supabase.auth.signUp({
+        const { data: cadastro, error } = await supabase.auth.signUp({
           email: r.data.email,
           password: r.data.senha,
           options: {
-            emailRedirectTo: `${window.location.origin}/carrinho`,
+            emailRedirectTo: `${window.location.origin}${destino ?? "/carrinho"}`,
             data: { nome: r.data.nome ?? "" },
           },
         });
         if (error) throw error;
+        if (!cadastro.session) {
+          // sem sessão automática: já entra com as mesmas credenciais
+          const { error: erroLogin } = await supabase.auth.signInWithPassword({
+            email: r.data.email,
+            password: r.data.senha,
+          });
+          if (erroLogin) throw erroLogin;
+        }
         toast.success("Conta criada!", { description: "Agora você já pode finalizar sua compra." });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -90,7 +109,7 @@ function ContaPage() {
           return;
         }
       }
-      void navigate({ to: "/" });
+      void navigate({ to: destino ?? "/", replace: true });
     } catch (err) {
       toast.error("Não foi possível continuar", {
         description: err instanceof Error ? err.message : "Tente novamente.",
