@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { StoreHeader } from "@/components/StoreHeader";
@@ -47,6 +47,12 @@ function ContaPage() {
   const [modo, setModo] = useState<"cadastro" | "login">("cadastro");
   const [erros, setErros] = useState<Record<string, string>>({});
   const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => {
+    if (!carregando && user && destino) {
+      void navigate({ to: destino, replace: true });
+    }
+  }, [carregando, user, destino, navigate]);
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
