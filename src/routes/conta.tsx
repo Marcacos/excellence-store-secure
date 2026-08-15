@@ -43,6 +43,7 @@ const schema = z.object({
 function ContaPage() {
   const { user, isAdmin, sair, carregando, papelCarregando } = useAuth();
   const navigate = useNavigate();
+  const { redirect: destino } = Route.useSearch();
   const [modo, setModo] = useState<"cadastro" | "login">("cadastro");
   const [erros, setErros] = useState<Record<string, string>>({});
   const [enviando, setEnviando] = useState(false);
