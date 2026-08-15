@@ -12,11 +12,10 @@ import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/conta")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>) => ({
-    redirect: typeof search["redirect"] === "string" && search["redirect"].startsWith("/")
-      ? (search["redirect"] as string)
-      : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    const r = search["redirect"];
+    return typeof r === "string" && r.startsWith("/") ? { redirect: r } : {};
+  },
   head: () => ({
     meta: [
       { title: "Criar conta ou entrar — Excellence Store" },
