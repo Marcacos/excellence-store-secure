@@ -103,7 +103,7 @@ function ContaPage() {
           return;
         }
       }
-      void navigate({ to: "/" });
+      void navigate({ to: destino ?? "/", replace: true });
     } catch (err) {
       toast.error("Não foi possível continuar", {
         description: err instanceof Error ? err.message : "Tente novamente.",
